@@ -1,0 +1,138 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+// Інтерфейс для пошукових операцій
+public interface ISearchable
+{
+    List<Product> SearchByPrice(double minPrice, double maxPrice);
+    List<Product> SearchByCategory(string category);
+    List<Product> SearchByRating(int minRating);
+}
+
+// Клас Товар
+public class Product
+{
+    public string Name { get; set; }
+    public double Price { get; set; }
+    public string Description { get; set; }
+    public string Category { get; set; }
+    public int Rating { get; set; }
+
+    public Product(string name, double price, string description, string category, int rating)
+    {
+        Name = name;
+        Price = price;
+        Description = description;
+        Category = category;
+        Rating = rating;
+    }
+}
+
+// Клас Користувач
+public class User
+{
+    public string Username { get; set; }
+    public string Password { get; set; }
+    public List<Order> PurchaseHistory { get; set; }
+
+    public User(string username, string password)
+    {
+        Username = username;
+        Password = password;
+        PurchaseHistory = new List<Order>();
+    }
+}
+
+// Клас Замовлення
+public class Order
+{
+    public List<Product> Products { get; set; }
+    public int Quantity { get; set; }
+    public double TotalPrice { get; set; }
+    public string Status { get; set; }
+
+    public Order(List<Product> products, int quantity, double totalPrice, string status)
+    {
+        Products = products;
+        Quantity = quantity;
+        TotalPrice = totalPrice;
+        Status = status;
+    }
+}
+
+// Клас Магазин
+public class Store : ISearchable
+{
+    public List<Product> Products { get; set; }
+    public List<User> Users { get; set; }
+    public List<Order> Orders { get; set; }
+
+    public Store()
+    {
+        Products = new List<Product>();
+        Users = new List<User>();
+        Orders = new List<Order>();
+    }
+
+    public void AddProduct(Product product)
+    {
+        Products.Add(product);
+    }
+
+    public void AddUser(User user)
+    {
+        Users.Add(user);
+    }
+
+    public void DisplayProducts()
+    {
+        foreach (var product in Products)
+        {
+            Console.WriteLine($"{product.Name} - {product.Price}$ - {product.Category} - Rating: {product.Rating}");
+        }
+    }
+
+    // Реалізація пошукових операцій інтерфейсу ISearchable
+    public List<Product> SearchByPrice(double minPrice, double maxPrice)
+    {
+        return Products.Where(p => p.Price >= minPrice && p.Price <= maxPrice).ToList();
+    }
+
+    public List<Product> SearchByCategory(string category)
+    {
+        return Products.Where(p => p.Category.Equals(category, StringComparison.OrdinalIgnoreCase)).ToList();
+    }
+
+    public List<Product> SearchByRating(int minRating)
+    {
+        return Products.Where(p => p.Rating >= minRating).ToList();
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        Store store = new Store();
+
+        // Додавання декількох продуктів у магазин
+        store.AddProduct(new Product("Laptop", 1200, "High-performance laptop", "Electronics", 5));
+        store.AddProduct(new Product("Smartphone", 800, "Latest smartphone model", "Electronics", 4));
+        store.AddProduct(new Product("Headphones", 150, "Noise-canceling headphones", "Electronics", 4));
+        store.AddProduct(new Product("Coffee Maker", 50, "Automatic coffee maker", "Appliances", 3));
+
+        // Виведення інформації про продукти
+        Console.WriteLine("Available Products:");
+        store.DisplayProducts();
+
+        // Додавання користувача та замовлення
+        User user = new User("john_doe", "password123");
+        store.AddUser(user);
+
+        List<Product> userProducts = store.SearchByCategory("Electronics");
+        double orderTotalPrice = userProducts.Sum(p => p.Price);
+        Order order = new Order(userProducts, userProducts.Count, orderTotalPrice, "Pending");
+        user.PurchaseHistory.Add(order);
+    }
+}
